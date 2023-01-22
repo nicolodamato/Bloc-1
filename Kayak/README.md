@@ -12,7 +12,7 @@ Hotels in the area
 The application should then be able to recommend the best destinations and hotels based on the above variables at any given time.
 
 Mapbox of cities based on temperature
-![cities.png](cities.png
+![cities.png](cities.png)
 
 Mapbox of Marseille
 ![marseille.png](marseille.png)
