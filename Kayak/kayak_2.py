@@ -17,25 +17,28 @@ class QuotesSpider(scrapy.Spider):
     list_of_cities = [[city for key, city in ele.items()] for ele in cities]
 
     def parse(self, response):
-        for city in self.list_of_cities:
+        for city in self.list_of_cities: # create a loop in order to get each page of each city
             yield scrapy.FormRequest.from_response(response,
                                                    formdata = {'ss': city},
-                                                   callback = self.after_search,
+                                                   callback = self.after_search, # create a callback 
                                                    meta = {'city': city})
 
     def after_search(self, response):
 
     # Callback function that will be called when starting your spider
     # It will get text, author and tags of all the <div> with class="quote" 
+    # after looking the website booking.com, use css will be more appropriate
+    # define hotels variable containing the first css path 
         hotels = response.css('div.a826ba81c4.fe821aea6c.fa2f36ad22.afd256fc79.d08f526e0d.ed11e24d01.ef9845d4b3.da89aeb942')
-        city = response.request.meta["city"]
-        for hotel in hotels:
+        city = response.request.meta["city"] # city is the final value of the request.meta attribute
+        for hotel in hotels: 
 
-                hotel_name = hotel.css('.a23c043802::text').get()
-                hotel_score = hotel.css('div.b5cd09854e.d10a6220b4::text').get()
-                hotel_description = hotel.css('div.d8eab2cf7f::text').get()
-                hotel_url = hotel.css('a::attr(href)').get()
-            
+                hotel_name = hotel.css('.a23c043802::text').get() # get the hotel name 
+                hotel_score = hotel.css('div.b5cd09854e.d10a6220b4::text').get() # get the hotel score
+                hotel_description = hotel.css('div.d8eab2cf7f::text').get() # get the hotel description
+                hotel_url = hotel.css('a::attr(href)').get() # get the hotel url
+
+                # create a dictionnary containing our values
                 cities_dict= {
                     'city': city,
                     'hotel_name': hotel_name,
@@ -43,15 +46,17 @@ class QuotesSpider(scrapy.Spider):
                     'description' : hotel_description,
                     'url' : hotel_url
                 }
-
+                
+                # use follow method to click the url and get gps coordinates
                 yield response.follow(url=hotel_url, callback=self.gps, meta={"cities_dict": cities_dict})
     
+    # create a gps fonction to get coordinates following the url
     def gps(self, response):
 
-        data = response.request.meta["cities_dict"]
-        gps = response.css('#hotel_address::attr(data-atlas-latlng)').get()
+        data = response.request.meta["cities_dict"] 
+        gps = response.css('#hotel_address::attr(data-atlas-latlng)').get() # get hotels coordinates
 
-        data['gps'] = gps
+        data['gps'] = gps 
         
         yield data
 
